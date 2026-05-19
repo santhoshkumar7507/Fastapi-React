@@ -11,18 +11,20 @@ services:
       - frontend
   frontend:
     image: "node:22"
-    user: "node"
     working_dir: /home/node/app
     environment:
       - NODE_ENV=development
       - WDS_SOCKET_PORT=0
+    stdin_open: true
+    tty: true
     volumes:
       - ./frontend/:/home/node/app
+      - /home/node/app/node_modules
     expose:
       - "3000"
     ports:
       - "3000:3000"
-    command: "npm start"
+    command: sh -c "npm install && npm start"
   backend:
     image: todo-app/backend
     build: ./backend
@@ -38,3 +40,13 @@ services:
     env_file:
       - path: ./.env
         required: true
+    depends_on:
+      - mongodb
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+volumes:
+  mongodb_data:
